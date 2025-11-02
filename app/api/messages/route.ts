@@ -27,7 +27,7 @@ export async function POST(req: Request) {
 
     const validation = messageSchema.safeParse(body)
     if (!validation.success) {
-      return NextResponse.json({ message: "Invalid input data", errors: validation.error.errors }, { status: 400 })
+      return NextResponse.json({ message: "Invalid input data", errors: validation.error.issues }, { status: 400 })
     }
 
     const { threadId, content, receiverId } = body
@@ -42,6 +42,9 @@ export async function POST(req: Request) {
     if (!thread) {
       return NextResponse.json({ message: "Thread not found" }, { status: 404 })
     }
+if (thread.participant1Id !== session.user.id && thread.participant2Id !== session.user.id) {
+  return NextResponse.json({ message: "You are not part of this thread" }, { status: 403 })
+}
 
     // Create message
     const message = await prisma.message.create({

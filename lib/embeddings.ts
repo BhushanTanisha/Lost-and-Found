@@ -1,4 +1,4 @@
-import sharp from "sharp";
+import Jimp from "jimp";
 import { pipeline } from "@xenova/transformers";
 
 // Load CLIP model once
@@ -15,18 +15,19 @@ async function loadExtractor() {
 }
 
 export async function generateImageEmbeddingFromBuffer(buffer: Buffer) {
-  // Convert image to jpeg buffer
-  const jpegBuffer = await sharp(buffer).jpeg().toBuffer();
+  // ✅ Convert image to JPEG using Jimp (Sharp removed)
+  const img = await Jimp.read(buffer);
+  const jpegBuffer = await img.quality(90).getBufferAsync(Jimp.MIME_JPEG);
 
-  // Load CLIP image encoder
+  // ✅ Load CLIP encoder
   const encoder = await loadExtractor();
 
-  // Extract embedding
+  // ✅ Extract embedding
   const output = await encoder(jpegBuffer, {
     pooling: "mean",
     normalize: true,
   });
 
-  // Convert from tensor to array
+  // ✅ Output as array
   return Array.from(output.data);
 }
