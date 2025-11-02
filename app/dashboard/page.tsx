@@ -22,9 +22,33 @@ export default function Dashboard() {
     async function fetchItems() {
       if (status === "authenticated") {
         try {
-          const response = await fetch("/api/items/user")
-          const data = await response.json()
-          setItems(data)
+          const response = await fetch("/api/items/user", {
+  cache: "no-store",
+});
+
+if (!response.ok) {
+  console.error("API returned error:", await response.text());
+  setItems([]);
+  return;
+}
+
+let data: any = [];
+
+try {
+  data = await response.json();
+} catch (err) {
+  console.error("Failed to parse JSON:", err);
+  setItems([]);
+  return;
+}
+
+if (Array.isArray(data)) {
+  setItems(data);
+} else {
+  console.error("API did not return an array:", data);
+  setItems([]);
+}
+
         } catch (error) {
           console.error("Failed to fetch items:", error)
         } finally {
